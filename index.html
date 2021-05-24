@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- displays site properly based on user's device -->
+
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon-32x32.png">
+  
+  <title>Frontend Mentor | IP Address Tracker</title>
+
+  <!-- Feel free to remove these styles or customise in your own stylesheet 👍 -->
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet"> 
+  <script src="https://kit.fontawesome.com/7d989e692a.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="css/style.css" type="text/css">
+  <style>
+    .attribution { font-size: 11px; text-align: center; }
+    .attribution a { color: hsl(228, 45%, 44%); }
+  </style>
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin=""/>
+            <!-- Make sure you put this AFTER Leaflet's CSS -->
+        <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+
+  <script src="script.js" defer></script>
+</head>
+<body>
+
+    <section class="container">
+        <div class="center">
+
+            <div class="info">
+                <h2>IP Address Tracker</h2>
+
+                <div class="input-wraper">
+                    <input type="text" id="ip" placeholder="Search for any IP address or domain">
+                    <i id="btn" class="fa fa-chevron-right"></i>
+                </div><!--input-wraper-->
+            </div><!--info-->
+          
+            <div class="result">
+                <div class="result-box">
+                    <p><small>IP Address</small></p>
+                    <h3 class="ip"></h3>
+                </div>
+                <div class="result-box">
+                    <p><small>Location</small></p>
+                    <h3 class="local"></h3>
+                </div>
+                <div class="result-box">
+                    <p><small>Timezone</small></p>
+                    <h3 class="time"></h3>
+                </div>
+                <div class="result-box">
+                    <p><small>ISP</small></p>
+                    <h3 class="isp"></h3>
+                </div>
+
+            </div>  
+            <div id='map'></div>
+        </div>
+
+
+    </section>             
+  
+  <div class="attribution">
+    Challenge by <a href="https://www.frontendmentor.io?ref=challenge" target="_blank">Frontend Mentor</a>. 
+    Coded by <a href="#">Adryandev</a>.
+  </div>
+
+  <script>
+
+
+        
+                const btn =  document.querySelector('#btn');
+                const elIp =  document.querySelector('h3.ip');
+                const elLocal = document.querySelector('h3.local');
+                const elTime = document.querySelector('h3.time');
+                const elIsp = document.querySelector('h3.isp');
+                const ip = document.querySelector('#ip');
+
+//https://geo.ipify.org/api/v1?apiKey=at_8TCNJtldA9uGpeMn3x69blBKetNbi&ipAddress=8.8.8.8
+
+
+
+btn.addEventListener('click',function(){
+
+    elIp.innerHTML = ip.value;
+
+
+    /* 
+    
+        fetch('https://geo.ipify.org/api/v1?apiKey=at_8TCNJtldA9uGpeMn3x69blBKetNbi&ipAddress='+ip.value)
+    .then(response => response.json())
+    .then(function(json){
+        json.location.map(function(val){
+            elLocal.innerHTML = val.city;
+    });
+    */
+    
+    var request = new XMLHttpRequest();
+    request.open("GET","https://geo.ipify.org/api/v1?apiKey=at_8TCNJtldA9uGpeMn3x69blBKetNbi&ipAddress="+ip.value);
+
+    request.onload = function(){
+        if(this.status >= 200 && this.status < 400){
+            var data = JSON.parse(this.response);
+            elLocal.innerHTML = data.location.city+","+data.location.region;
+            elIsp.innerHTML = data.isp;
+            elTime.innerHTML = data.location.timezone+" | "+data.location.country;
+            console.log(data.location.city);
+
+            var map = L.map('map').setView([data.location.lat, data.location.lng], 13);
+                var marker = L.marker([data.location.lat, data.location.lng]).addTo(map);
+                L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+                    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                    maxZoom: 18,
+                    id: 'mapbox/streets-v11',
+                    tileSize: 512,
+                    zoomOffset: -1,
+                    accessToken: 'pk.eyJ1IjoiYWRyeWFuZGV2IiwiYSI6ImNrcDJuOWNiMzFsOXAycHFxZThjMXc0MW8ifQ.R_DB4_wfER2a8-FVJW_ykQ'
+                }).addTo(map);
+
+        }else {
+            console.log('ERRO!')
+        }
+        
+    }
+
+        request.onerror = function(){
+
+        }
+
+        request.send();
+
+        
+
+    });
+
+
+    </script>
+  
+</body>
+</html>
